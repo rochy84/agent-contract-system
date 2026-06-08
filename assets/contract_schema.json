@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Contract Registry",
+  "description": "Schema for the Agent Contract System registry (AGENT_CONTRACT.md machine-readable representation)",
+  "type": "object",
+  "required": ["project", "version", "last_updated", "agents", "resources"],
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Project name or identifier"
+    },
+    "version": {
+      "type": "string",
+      "description": "Contract schema version (e.g., 1.0)"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO date of last update"
+    },
+    "agents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "role", "runtime"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^AGT-\\d{3}$",
+            "description": "Unique agent identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable agent name"
+          },
+          "role": {
+            "type": "string",
+            "description": "What this agent does"
+          },
+          "runtime": {
+            "type": "string",
+            "enum": ["claude-code", "openclaw", "langchain", "custom-script", "manual", "claude-code-agent", "openclaw-skill", "general-agent"],
+            "description": "Runtime environment"
+          },
+          "owns": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Resource paths this agent owns"
+          },
+          "reads": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Resource paths this agent reads"
+          },
+          "writes": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Resource paths this agent writes"
+          },
+          "system_prompt_path": {
+            "type": "string",
+            "description": "Path to the agent's system prompt file"
+          }
+        }
+      }
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "owner"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Resource name"
+          },
+          "path": {
+            "type": "string",
+            "description": "File path or connection string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["file", "database", "logical_entity", "external_integration", "configuration"],
+            "description": "Resource type"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Agent ID that owns this resource"
+          },
+          "co_owners": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Additional owner agent IDs (partitioned ownership)"
+          },
+          "writers": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Agent IDs authorized to write"
+          },
+          "readers": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Agent IDs with read-only access"
+          },
+          "collision": {
+            "type": "boolean",
+            "description": "Whether multiple agents write to this resource"
+          },
+          "risk_level": {
+            "type": "string",
+            "enum": ["LOW", "MEDIUM", "HIGH"],
+            "description": "Collision risk level"
+          }
+        }
+      }
+    },
+    "collision_zones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["resource", "agents", "risk", "resolution"],
+        "properties": {
+          "resource": {
+            "type": "string"
+          },
+          "agents": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "risk": {
+            "type": "string",
+            "enum": ["LOW", "MEDIUM", "HIGH"]
+          },
+          "resolution": {
+            "type": "string",
+            "description": "How the collision is resolved"
+          }
+        }
+      }
+    },
+    "change_log": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["date", "agent_id", "resource", "change_description"],
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "agent_id": {
+            "type": "string"
+          },
+          "resource": {
+            "type": "string"
+          },
+          "change_description": {
+            "type": "string"
+          },
+          "breaking": {
+            "type": "boolean"
+          },
+          "readers_notified": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "reviewer": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "health": {
+      "type": "object",
+      "properties": {
+        "resources_with_owners_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "collisions_resolved_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "changes_with_notifications_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "agents_registered": { "type": "integer" },
+        "last_validation": { "type": "string", "format": "date" }
+      }
+    }
+  }
+}
